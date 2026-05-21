@@ -17,10 +17,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg BAT_VERSION=${{ github.ref_name }} \
+            -t ghcr.io/foxfromworld/bat:${{ github.ref_name }} .
 
-      - name: Build and push
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/foxfromworld/bat:${{ github.ref_name }}
+      - name: Push Docker image
+        run: docker push ghcr.io/foxfromworld/bat:${{ github.ref_name }}
