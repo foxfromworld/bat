@@ -8,9 +8,9 @@ RUN apt-get update && apt-get install -y wget tar cargo build-essential && \
 
 RUN wget https://github.com/sharkdp/bat/archive/refs/tags/${BAT_VERSION}.tar.gz && \
     tar -xzf ${BAT_VERSION}.tar.gz && \
-    cd bat-${BAT_VERSION#v} && \
+    cd bat-${BAT_VERSION} && \
     cargo build --release && \
     mv target/release/bat /usr/local/bin/ && \
-    cd .. && rm -rf bat-${BAT_VERSION#v} ${BAT_VERSION}.tar.gz
+    cd .. && rm -rf bat-${BAT_VERSION} ${BAT_VERSION}.tar.gz
 
 ENTRYPOINT ["bat"]
