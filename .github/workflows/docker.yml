@@ -3,6 +3,8 @@ name: Docker Image CI
 on:
   push:
     branches: [ master ]
+  release:
+    types: [published]
 
 jobs:
   build:
@@ -17,12 +19,31 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
+      - name: Read VERSION
+        id: version
+        run: echo "BAT_VERSION=$(cat VERSION)" >> $GITHUB_ENV
+
       - name: Build Docker image
         run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION=${{ github.ref_name }}
+          else
+            VERSION=${{ env.BAT_VERSION }}
+          fi
+
+          echo "Building bat version: $VERSION"
+
           docker build \
-            --build-arg BAT_VERSION=${{ github.ref_name }} \
-            -t ghcr.io/foxfromworld/bat:${{ github.ref_name }} .
+            --build-arg BAT_VERSION=$VERSION \
+            -t ghcr.io/foxfromworld/bat:$VERSION .
 
       - name: Push Docker image
-        run: docker push ghcr.io/foxfromworld/bat:${{ github.ref_name }}
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION=${{ github.ref_name }}
+          else
+            VERSION=${{ env.BAT_VERSION }}
+          fi
+
+          docker push ghcr.io/foxfromworld/bat:$VERSION
