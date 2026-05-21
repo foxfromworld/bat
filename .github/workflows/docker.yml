@@ -1,37 +1,26 @@
-name: Docker Image CI
+name: Build and Push Docker Image
 
 on:
-  push:
-    branches: [ master ]
   release:
     types: [published]
 
 jobs:
-  build:
+  docker:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v3
 
-      - name: Log in to GHCR
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Read VERSION
-        id: version
-        run: echo "BAT_VERSION=$(cat VERSION)" >> $GITHUB_ENV
-
       - name: Build Docker image
         run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            VERSION=${{ github.ref_name }}
-          else
-            VERSION=${{ env.BAT_VERSION }}
-          fi
-
+          VERSION=${{ github.ref_name }}
           echo "Building bat version: $VERSION"
 
           docker build \
@@ -40,10 +29,12 @@ jobs:
 
       - name: Push Docker image
         run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            VERSION=${{ github.ref_name }}
-          else
-            VERSION=${{ env.BAT_VERSION }}
-          fi
-
+          VERSION=${{ github.ref_name }}
           docker push ghcr.io/foxfromworld/bat:$VERSION
+
+      - name: Push latest tag
+        if: github.event_name == 'release'
+        run: |
+          VERSION=${{ github.ref_name }}
+          docker tag ghcr.io/foxfromworld/bat:$VERSION ghcr.io/foxfromworld/bat:latest
+          docker push ghcr.io/foxfromworld/bat:latest
