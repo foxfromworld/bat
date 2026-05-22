@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM rust:1.88-slim
 
 ARG BAT_VERSION
 ENV BAT_VERSION=${BAT_VERSION}
